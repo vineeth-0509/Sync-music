@@ -5,14 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
 import {z} from "zod";
 export const UpvoteSchema = z.object({
     streamId: z.string(),
-  
 })
-
-
 
 export async function POST(req:NextRequest){
     const session = await  getServerSession();
-    //later todo: replace this with the id everywhere
     if(!session?.user?.email){
         return NextResponse.json({
             message:"Unauthenticated"

@@ -83,13 +83,26 @@ export async function POST(req: NextRequest) {
       );
     }
     const res = await GetVideoDetails(extractedId);
-    console.log("Youtube API responses:", res);
+    console.log(res.title);
+    const thumbnails = res.thumbnail.thumbnails;
+    thumbnails.sort((a: { width: number }, b: { width: number }) =>
+      a.width < b.width ? -1 : 1
+    );
     const stream = await prismaClient.stream.create({
       data: {
         userId: data.creatorId,
         url: data.url,
         extractedId,
         type: "Youtube",
+        title: res.title ?? "Cant find Video",
+        smallImg:
+          (thumbnails.length > 1
+            ? thumbnails[thumbnails.length - 2].url
+            : thumbnails[thumbnails.length - 1].url) ??
+          "https://sp.yimg.com/ib/th/id/OIP.uLKVfx86K6NvFYSBw47ikAHaEK?pid=Api&w=148&h=148&c=7&dpr=2&rs=1",
+        bigImg:
+          thumbnails[thumbnails.length - 1].url ??
+          "https://sp.yimg.com/ib/th/id/OIP.uLKVfx86K6NvFYSBw47ikAHaEK?pid=Api&w=148&h=148&c=7&dpr=2&rs=1",
       },
     });
     return NextResponse.json({
