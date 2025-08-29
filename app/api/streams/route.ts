@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import youtubesearchapi, { GetVideoDetails } from "youtube-search-api";
 import { YT_REGEX } from "@/app/lib/utils";
+import { getServerSession } from "next-auth";
 
 export const CreateStream = z.object({
   creatorId: z.string(),
@@ -11,13 +12,39 @@ export const CreateStream = z.object({
 
 export async function GET(req: NextRequest) {
   const creatorId = req.nextUrl.searchParams.get("creatorId");
-  const streams = await prismaClient.stream.findMany({
+  if (!creatorId) {
+    return NextResponse.json({ message: "Error" }, { status: 411 });
+  }
+  const session = await getServerSession();
+  const user = await prismaClient.user.findFirst({
     where: {
-      userId: creatorId ?? "",
+      email: session?.user?.email ?? "",
+    },
+  });
+  if (!user) {
+    return NextResponse.json({ message: "Error" }, { status: 411 });
+  }
+  const streams = await prismaClient.stream.findMany({
+    where: { userId: creatorId },
+    include: {
+      _count: {
+        select: {
+          upvotes: true,
+        },
+      },
+      upvotes: {
+        where: {
+          userId: user.id,
+        },
+      },
     },
   });
   return NextResponse.json({
-    streams,
+    streams: streams.map(({ _count, ...rest }) => ({
+      ...rest,
+      upvotes: _count.upvotes,
+      haveUpvoted: rest.upvotes.length ? true : false,
+    })),
   });
 }
 
