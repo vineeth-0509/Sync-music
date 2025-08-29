@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 
 import { Users, Radio, Headphones } from "lucide-react";
 import { Appbar } from "./components/Appbar";
+import { Redirect } from "./components/Redirect";
 
 export default async function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
       <Appbar />
+      <Redirect/>
       <main className="flex-1 py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
