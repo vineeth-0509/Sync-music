@@ -71,9 +71,11 @@ const REFRESH_INTERVAL_MS = 10 * 1000;
 // const creatorId = "6b71740c-ebc7-4ba8-9036-c091f14fea39";
 
 export default function StreamView({
-    creatorId
-}:{
-    creatorId: string
+  creatorId,
+  playVideo = false,
+}: {
+  creatorId: string;
+  playVideo: boolean;
 }) {
   const [inputLink, setInputLink] = useState("");
   const [queue, setQueue] = useState<Video[]>([]);
@@ -85,7 +87,6 @@ export default function StreamView({
   const [isEmptyQueueDialogOpen, setIsEmptyQueueDialogOpen] = useState(false);
   const [spaceName, setSpaceName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [playVideo, setPlayVideo] = useState(true);
 
   async function refreshStreams() {
     try {
@@ -95,9 +96,12 @@ export default function StreamView({
       const json = await res.json();
       if (json.streams && Array.isArray(json.streams)) {
         setQueue(
-          json.streams.length > 0
-            ? json.streams.sort((a: any, b: any) => b.upvotes - a.upvotes)
-            : []
+          // json.streams.length > 0
+          //   ? json.streams.sort((a: any, b: any) => b.upvotes - a.upvotes)
+          //   : []
+          json.streams.sort((a: any, b: any) =>
+            a.upvotes < b.upvotes ? 1 : -1
+          )
         );
       } else {
         setQueue([]);
@@ -121,11 +125,11 @@ export default function StreamView({
 
   useEffect(() => {
     refreshStreams();
-    const interval = setInterval(()=>{
-        refreshStreams();
+    const interval = setInterval(() => {
+      refreshStreams();
     }, REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [creatorId]);
 
   useEffect(() => {
     if (!videoPlayerRef.current || !currentVideo) return;
@@ -408,20 +412,20 @@ export default function StreamView({
                     <CardContent className="p-4 flex flex-col md:flex-row md:space-x-3">
                       <Image
                         src={video.smallImg}
-                        width={320}
-                        height={180}
+                        width={80}
+                        height={80}
                         alt={`Thumbnail for ${video.title}`}
                         className="md:w-40 mb-5 md:mb-0 object-cover rounded-md"
                       />
-                      <div className="flex-grow">
-                        <h3 className="font-semibold text-white text-lg mb-2">
+                      <div className="flex-grow ml-3">
+                        <h3 className="font-semibold text-white text-sm mb-1">
                           {video.title}
                         </h3>
                         <div className="flex flex-col">
                           <span className="font-semibold text-white">
                             {video.title}
                           </span>
-                          <div className="flex items-center space-x-2 mt-3">
+                          <div className="flex items-center space-x-2 mt-2">
                             <Button
                               variant="outline"
                               size="sm"
@@ -431,12 +435,12 @@ export default function StreamView({
                                   video.haveUpvoted ? false : true
                                 )
                               }
-                              className="flex items-center space-x-1 bg-gray-800 text-white border-gray-700 hover:bg-gray-700"
+                              className="flex items-center space-x-1 bg-gray-800 text-white border-gray-700 hover:bg-gray-700 p-1"
                             >
                               {video.haveUpvoted ? (
-                                <ChevronDown className="h-4 w-4" />
+                                <ChevronDown className="h-3 w-3" />
                               ) : (
-                                <ChevronUp className="h-4 w-4" />
+                                <ChevronUp className="h-3 w-3" />
                               )}
                               <span>{video.upvotes}</span>
                             </Button>
@@ -445,9 +449,9 @@ export default function StreamView({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => removeSong(video.id)}
-                                className="bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                                className="bg-gray-700 hover:bg-gray-600 text-white transition-colors p-1"
                               >
-                                <X className="h-4 w-4" />
+                                <X className="h-3 w-3" />
                               </Button>
                             )}
                           </div>
@@ -503,9 +507,9 @@ export default function StreamView({
                       ) : (
                         <>
                           <Image
+                            width={160}
+                            height={90}
                             src={currentVideo.bigImg}
-                            width={1280}
-                            height={720}
                             className="w-full aspect-video object-cover rounded-md"
                             alt={currentVideo.title}
                           />

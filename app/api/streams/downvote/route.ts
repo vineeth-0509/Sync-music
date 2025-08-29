@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const data = UpvoteSchema.safeParse(req.json());
+    const data = UpvoteSchema.safeParse(await req.json());
     await prismaClient.upvote.delete({
       where: {
         userId_streamId: {
