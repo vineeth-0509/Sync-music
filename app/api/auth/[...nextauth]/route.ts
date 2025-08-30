@@ -1,6 +1,14 @@
 import { prismaClient } from "@/app/lib/db";
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+
+declare module "next-auth" {
+  interface session {
+    user: {
+      id: string;
+    } & DefaultSession["user"];
+  }
+}
 
 const handler = NextAuth({
   providers: [
@@ -22,8 +30,22 @@ const handler = NextAuth({
             provider: "Google",
           },
         });
-      } catch (error) {}
+      } catch (error) {
+        console.error("Error creating user:", error);
+      }
       return true;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.id as string;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = (user as any).id;
+      }
+      return token;
     },
   },
 });
