@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
       haveUpvoted: rest.upvotes.length ? true : false,
     })),
     activeStream,
+    isCreator: user.id === creatorId
   });
 }
 
@@ -296,7 +297,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Wrong URL format" }, { status: 400 });
     }
 
-    // Fetch video details from YouTube API
+    
     let videoDetails: VideoDetails | null = null;
     try {
       videoDetails = await fetchYoutubeVideo(extractedId);

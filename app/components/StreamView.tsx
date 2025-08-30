@@ -505,18 +505,15 @@ export default function StreamView({
                           className="w-full aspect-video"
                         />
                       ) : (
-                        <>
-                          <Image
-                            width={160}
-                            height={90}
-                            src={currentVideo.bigImg}
-                            className="w-full aspect-video object-cover rounded-md"
-                            alt={currentVideo.title}
+                        <div className="w-full aspect-video">
+                          <LiteYouTubeEmbed
+                            id={currentVideo.extractedId}
+                            title={currentVideo.title}
                           />
                           <p className="mt-2 text-center font-semibold text-white">
                             {currentVideo.title}
                           </p>
-                        </>
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -524,7 +521,8 @@ export default function StreamView({
                       No video playing
                     </p>
                   )}
-                  {playVideo && (
+
+                  {isCreator && playVideo && (
                     <Button
                       disabled={playNextLoader}
                       onClick={playNext}
