@@ -162,7 +162,7 @@ export default function StreamView({
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/streams/", {
+      const res = await fetch("/api/streams", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

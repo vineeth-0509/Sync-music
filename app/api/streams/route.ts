@@ -26,9 +26,7 @@ export async function GET(req: NextRequest) {
   }
   const [streams, activeStream] = await Promise.all([
     await prismaClient.stream.findMany({
-      where: { userId: creatorId,
-        played: false
-      },
+      where: { userId: creatorId, played: false },
       include: {
         _count: {
           select: {
@@ -46,9 +44,9 @@ export async function GET(req: NextRequest) {
       where: {
         userId: creatorId,
       },
-      include:{
-        stream: true
-      }
+      include: {
+        stream: true,
+      },
     }),
   ]);
   return NextResponse.json({
@@ -64,6 +62,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const data = CreateStream.parse(await req.json());
+    const session = await getServerSession();
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const user = await prismaClient.user.findUnique({
+      where: { email: session?.user?.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 401 });
+    }
     const match = data?.url.match(YT_REGEX);
     const extractedId = match ? match[1] : null;
     if (!match || !extractedId) {
@@ -77,6 +86,12 @@ export async function POST(req: NextRequest) {
       );
     }
     const res = await GetVideoDetails(extractedId);
+    if (!res?.title || !res?.thumbnail?.thumbnails?.length) {
+      return NextResponse.json(
+        { message: "Video details not found" },
+        { status: 404 }
+      );
+    }
     console.log(res.title);
     const thumbnails = res.thumbnail.thumbnails;
     thumbnails.sort((a: { width: number }, b: { width: number }) =>
@@ -84,7 +99,7 @@ export async function POST(req: NextRequest) {
     );
     const stream = await prismaClient.stream.create({
       data: {
-        userId: data.creatorId,
+        userId: user.id,
         url: data.url,
         extractedId,
         type: "Youtube",
